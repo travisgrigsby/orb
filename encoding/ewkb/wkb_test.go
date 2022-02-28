@@ -1,11 +1,13 @@
-package wkbcommon
+package ewkb
 
 import (
 	"bytes"
 	"encoding/binary"
+	"io/ioutil"
 	"testing"
 
 	"github.com/paulmach/orb"
+	"github.com/paulmach/orb/encoding/internal/wkbcommon"
 )
 
 func TestMarshal(t *testing.T) {
@@ -20,11 +22,36 @@ func TestMustMarshal(t *testing.T) {
 	}
 }
 
+func BenchmarkEncode_Point(b *testing.B) {
+	g := orb.Point{1, 2}
+	e := NewEncoder(ioutil.Discard)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		e.Encode(g)
+	}
+}
+
+func BenchmarkEncode_LineString(b *testing.B) {
+	g := orb.LineString{
+		{1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5},
+		{1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5},
+	}
+	e := NewEncoder(ioutil.Discard)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		e.Encode(g)
+	}
+}
+
 func compare(t testing.TB, e orb.Geometry, b []byte) {
 	t.Helper()
 
 	// Decoder
-	g, err := NewDecoder(bytes.NewReader(b)).Decode()
+	g, _, err := NewDecoder(bytes.NewReader(b)).Decode() // TODO
 	if err != nil {
 		t.Fatalf("decoder: read error: %v", err)
 	}
@@ -34,7 +61,7 @@ func compare(t testing.TB, e orb.Geometry, b []byte) {
 	}
 
 	// Umarshal
-	g, err = Unmarshal(b)
+	g, _, err = Unmarshal(b) // TODO
 	if err != nil {
 		t.Fatalf("unmarshal: read error: %v", err)
 	}
@@ -60,7 +87,7 @@ func compare(t testing.TB, e orb.Geometry, b []byte) {
 	}
 
 	// preallocation
-	if len(data) != GeomLength(e) {
-		t.Errorf("prealloc length: %v != %v", len(data), GeomLength(e))
+	if len(data) != wkbcommon.GeomLength(e) {
+		t.Errorf("prealloc length: %v != %v", len(data), wkbcommon.GeomLength(e))
 	}
 }

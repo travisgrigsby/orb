@@ -93,7 +93,7 @@ func (e *Encoder) SetByteOrder(bo binary.ByteOrder) {
 
 // Encode will write the geometry encoded as WKB to the given writer.
 func (e *Encoder) Encode(geom orb.Geometry) error {
-	return e.e.Encode(geom)
+	return e.e.Encode(geom, 0)
 }
 
 // Decoder can decoder WKB geometry off of the stream.

@@ -37,7 +37,7 @@ const (
 // is none is specified.
 var DefaultByteOrder binary.ByteOrder = binary.LittleEndian
 
-// An Encoder will encode a geometry as WKB to the writer given at
+// An Encoder will encode a geometry as (E)WKB to the writer given at
 // creation time.
 type Encoder struct {
 	buf []byte
@@ -48,8 +48,8 @@ type Encoder struct {
 
 // MustMarshal will encode the geometry and panic on error.
 // Currently there is no reason to error during geometry marshalling.
-func MustMarshal(geom orb.Geometry, byteOrder ...binary.ByteOrder) []byte {
-	d, err := Marshal(geom, byteOrder...)
+func MustMarshal(geom orb.Geometry, srid int, byteOrder ...binary.ByteOrder) []byte {
+	d, err := Marshal(geom, srid, byteOrder...)
 	if err != nil {
 		panic(err)
 	}
@@ -58,7 +58,7 @@ func MustMarshal(geom orb.Geometry, byteOrder ...binary.ByteOrder) []byte {
 }
 
 // Marshal encodes the geometry with the given byte order.
-func Marshal(geom orb.Geometry, byteOrder ...binary.ByteOrder) ([]byte, error) {
+func Marshal(geom orb.Geometry, srid int, byteOrder ...binary.ByteOrder) ([]byte, error) {
 	buf := bytes.NewBuffer(make([]byte, 0, GeomLength(geom)))
 
 	e := NewEncoder(buf)
@@ -66,7 +66,7 @@ func Marshal(geom orb.Geometry, byteOrder ...binary.ByteOrder) ([]byte, error) {
 		e.SetByteOrder(byteOrder[0])
 	}
 
-	err := e.Encode(geom)
+	err := e.Encode(geom, srid)
 	if err != nil {
 		return nil, err
 	}
@@ -92,8 +92,8 @@ func (e *Encoder) SetByteOrder(bo binary.ByteOrder) {
 	e.order = bo
 }
 
-// Encode will write the geometry encoded as WKB to the given writer.
-func (e *Encoder) Encode(geom orb.Geometry) error {
+// Encode will write the geometry encoded as (E)WKB to the given writer.
+func (e *Encoder) Encode(geom orb.Geometry, srid int) error {
 	if geom == nil {
 		return nil
 	}
@@ -171,7 +171,7 @@ func (e *Encoder) Encode(geom orb.Geometry) error {
 	panic("unsupported type")
 }
 
-// Decoder can decoder WKB geometry off of the stream.
+// Decoder can decoder (E)WKB geometry off of the stream.
 type Decoder struct {
 	r io.Reader
 }
@@ -208,7 +208,7 @@ func Unmarshal(data []byte) (orb.Geometry, error) {
 	return nil, ErrUnsupportedGeometry
 }
 
-// NewDecoder will create a new WKB decoder.
+// NewDecoder will create a new (E)WKB decoder.
 func NewDecoder(r io.Reader) *Decoder {
 	return &Decoder{
 		r: r,

@@ -1,4 +1,4 @@
-package wkbcommon
+package ewkb
 
 import (
 	"testing"

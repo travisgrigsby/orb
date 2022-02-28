@@ -41,7 +41,7 @@ func (e *Encoder) writeCollection(c orb.Collection) error {
 	}
 
 	for _, geom := range c {
-		err := e.Encode(geom)
+		err := e.Encode(geom, 0) // TODO
 		if err != nil {
 			return err
 		}

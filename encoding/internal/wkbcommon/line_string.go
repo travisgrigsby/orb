@@ -132,7 +132,7 @@ func (e *Encoder) writeMultiLineString(mls orb.MultiLineString) error {
 	}
 
 	for _, ls := range mls {
-		err := e.Encode(ls)
+		err := e.Encode(ls, 0) // TODO
 		if err != nil {
 			return err
 		}

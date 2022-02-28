@@ -160,7 +160,7 @@ func (e *Encoder) writeMultiPolygon(mp orb.MultiPolygon) error {
 	}
 
 	for _, p := range mp {
-		err := e.Encode(p)
+		err := e.Encode(p, 0) // TODO
 		if err != nil {
 			return err
 		}
