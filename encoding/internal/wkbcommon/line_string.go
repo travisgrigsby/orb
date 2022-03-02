@@ -42,10 +42,8 @@ func readLineString(r io.Reader, order byteOrder, buf []byte) (orb.LineString, e
 	return result, nil
 }
 
-func (e *Encoder) writeLineString(ls orb.LineString) error {
-	e.order.PutUint32(e.buf, lineStringType)
-	e.order.PutUint32(e.buf[4:], uint32(len(ls)))
-	_, err := e.w.Write(e.buf[:8])
+func (e *Encoder) writeLineString(ls orb.LineString, srid int) error {
+	err := e.writeTypePrefix(lineStringType, len(ls), srid)
 	if err != nil {
 		return err
 	}
@@ -123,16 +121,14 @@ func readMultiLineString(r io.Reader, order byteOrder, buf []byte) (orb.MultiLin
 	return result, nil
 }
 
-func (e *Encoder) writeMultiLineString(mls orb.MultiLineString) error {
-	e.order.PutUint32(e.buf, multiLineStringType)
-	e.order.PutUint32(e.buf[4:], uint32(len(mls)))
-	_, err := e.w.Write(e.buf[:8])
+func (e *Encoder) writeMultiLineString(mls orb.MultiLineString, srid int) error {
+	err := e.writeTypePrefix(multiLineStringType, len(mls), srid)
 	if err != nil {
 		return err
 	}
 
 	for _, ls := range mls {
-		err := e.Encode(ls, 0) // TODO
+		err := e.Encode(ls, 0)
 		if err != nil {
 			return err
 		}

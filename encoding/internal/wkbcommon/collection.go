@@ -32,10 +32,8 @@ func readCollection(r io.Reader, order byteOrder, buf []byte) (orb.Collection, e
 	return result, nil
 }
 
-func (e *Encoder) writeCollection(c orb.Collection) error {
-	e.order.PutUint32(e.buf, geometryCollectionType)
-	e.order.PutUint32(e.buf[4:], uint32(len(c)))
-	_, err := e.w.Write(e.buf[:8])
+func (e *Encoder) writeCollection(c orb.Collection, srid int) error {
+	err := e.writeTypePrefix(geometryCollectionType, len(c), srid)
 	if err != nil {
 		return err
 	}

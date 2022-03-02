@@ -78,9 +78,16 @@ func readPoint(r io.Reader, order byteOrder, buf []byte) (orb.Point, error) {
 	return p, nil
 }
 
-func (e *Encoder) writePoint(p orb.Point) error {
-	e.order.PutUint32(e.buf, pointType)
-	_, err := e.w.Write(e.buf[:4])
+func (e *Encoder) writePoint(p orb.Point, srid int) error {
+	var err error
+	if srid != 0 {
+		e.order.PutUint32(e.buf, pointType|ewkbType)
+		e.order.PutUint32(e.buf[4:], uint32(srid))
+		_, err = e.w.Write(e.buf[:8])
+	} else {
+		e.order.PutUint32(e.buf, pointType)
+		_, err = e.w.Write(e.buf[:4])
+	}
 	if err != nil {
 		return err
 	}
@@ -152,16 +159,14 @@ func readMultiPoint(r io.Reader, order byteOrder, buf []byte) (orb.MultiPoint, e
 	return result, nil
 }
 
-func (e *Encoder) writeMultiPoint(mp orb.MultiPoint) error {
-	e.order.PutUint32(e.buf, multiPointType)
-	e.order.PutUint32(e.buf[4:], uint32(len(mp)))
-	_, err := e.w.Write(e.buf[:8])
+func (e *Encoder) writeMultiPoint(mp orb.MultiPoint, srid int) error {
+	err := e.writeTypePrefix(multiPointType, len(mp), srid)
 	if err != nil {
 		return err
 	}
 
 	for _, p := range mp {
-		err := e.Encode(p, 0) // TODO
+		err := e.Encode(p, 0)
 		if err != nil {
 			return err
 		}

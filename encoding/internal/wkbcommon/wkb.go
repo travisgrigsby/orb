@@ -24,6 +24,8 @@ const (
 	multiLineStringType    uint32 = 5
 	multiPolygonType       uint32 = 6
 	geometryCollectionType uint32 = 7
+
+	ewkbType uint32 = 0x20000000
 )
 
 const (
@@ -153,22 +155,39 @@ func (e *Encoder) Encode(geom orb.Geometry, srid int) error {
 
 	switch g := geom.(type) {
 	case orb.Point:
-		return e.writePoint(g)
+		return e.writePoint(g, srid)
 	case orb.MultiPoint:
-		return e.writeMultiPoint(g)
+		return e.writeMultiPoint(g, srid)
 	case orb.LineString:
-		return e.writeLineString(g)
+		return e.writeLineString(g, srid)
 	case orb.MultiLineString:
-		return e.writeMultiLineString(g)
+		return e.writeMultiLineString(g, srid)
 	case orb.Polygon:
-		return e.writePolygon(g)
+		return e.writePolygon(g, srid)
 	case orb.MultiPolygon:
-		return e.writeMultiPolygon(g)
+		return e.writeMultiPolygon(g, srid)
 	case orb.Collection:
-		return e.writeCollection(g)
+		return e.writeCollection(g, srid)
 	}
 
 	panic("unsupported type")
+}
+
+func (e *Encoder) writeTypePrefix(t uint32, l int, srid int) error {
+	if srid == 0 {
+		e.order.PutUint32(e.buf, t)
+		e.order.PutUint32(e.buf[4:], uint32(l))
+
+		_, err := e.w.Write(e.buf[:8])
+		return err
+	}
+
+	e.order.PutUint32(e.buf, t|ewkbType)
+	e.order.PutUint32(e.buf[4:], uint32(srid))
+	e.order.PutUint32(e.buf[8:], uint32(l))
+
+	_, err := e.w.Write(e.buf[:12])
+	return err
 }
 
 // Decoder can decoder (E)WKB geometry off of the stream.
