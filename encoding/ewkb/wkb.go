@@ -151,12 +151,12 @@ type Decoder struct {
 
 // Unmarshal will decode the type into a Geometry.
 func Unmarshal(data []byte) (orb.Geometry, int, error) {
-	g, err := wkbcommon.Unmarshal(data)
+	g, srid, err := wkbcommon.Unmarshal(data)
 	if err != nil {
 		return nil, 0, mapCommonError(err)
 	}
 
-	return g, 0, nil
+	return g, srid, nil
 }
 
 // NewDecoder will create a new EWKB decoder.

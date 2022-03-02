@@ -75,7 +75,7 @@ func unmarshalMultiLineString(order byteOrder, data []byte) (orb.MultiLineString
 	result := make(orb.MultiLineString, 0, alloc)
 
 	for i := 0; i < int(num); i++ {
-		ls, err := ScanLineString(data)
+		ls, _, err := ScanLineString(data)
 		if err != nil {
 			return nil, err
 		}

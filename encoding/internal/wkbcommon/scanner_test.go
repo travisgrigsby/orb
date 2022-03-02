@@ -43,7 +43,7 @@ func TestScanPoint(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			p, err := ScanPoint(tc.data)
+			p, _, err := ScanPoint(tc.data) // TODO
 			if err != nil {
 				t.Fatalf("scan error: %v", err)
 			}
@@ -88,7 +88,7 @@ func TestScanPoint_Errors(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := ScanPoint(tc.data)
+			_, _, err := ScanPoint(tc.data) // TODO
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
 			}
@@ -121,7 +121,7 @@ func TestScanMultiPoint(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			mp, err := ScanMultiPoint(tc.data)
+			mp, _, err := ScanMultiPoint(tc.data) // TODO
 			if err != nil {
 				t.Fatalf("scan error: %v", err)
 			}
@@ -155,7 +155,7 @@ func TestScanMultiPoint_Errors(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := ScanMultiPoint(tc.data)
+			_, _, err := ScanMultiPoint(tc.data) // TODO
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
 			}
@@ -188,7 +188,7 @@ func TestScanLineString(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			ls, err := ScanLineString(tc.data)
+			ls, _, err := ScanLineString(tc.data) // TODO
 			if err != nil {
 				t.Fatalf("scan error: %v", err)
 			}
@@ -222,7 +222,7 @@ func TestScanLineString_Errors(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := ScanLineString(tc.data)
+			_, _, err := ScanLineString(tc.data) // TODO
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
 			}
@@ -260,7 +260,7 @@ func TestScanMultiLineString(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			mls, err := ScanMultiLineString(tc.data)
+			mls, _, err := ScanMultiLineString(tc.data) // TODO
 			if err != nil {
 				t.Fatalf("scan error: %v", err)
 			}
@@ -294,7 +294,7 @@ func TestScanMultiLineString_Errors(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := ScanMultiLineString(tc.data)
+			_, _, err := ScanMultiLineString(tc.data) // TODO
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
 			}
@@ -327,7 +327,7 @@ func TestScanPolygon(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			p, err := ScanPolygon(tc.data)
+			p, _, err := ScanPolygon(tc.data) // TODO
 			if err != nil {
 				t.Fatalf("scan error: %v", err)
 			}
@@ -361,7 +361,7 @@ func TestScanPolygon_Errors(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := ScanPolygon(tc.data)
+			_, _, err := ScanPolygon(tc.data) // TODO
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
 			}
@@ -399,7 +399,7 @@ func TestScanMultiPolygon(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			mp, err := ScanMultiPolygon(tc.data)
+			mp, _, err := ScanMultiPolygon(tc.data) // TODO
 			if err != nil {
 				t.Fatalf("scan error: %v", err)
 			}
@@ -433,7 +433,7 @@ func TestScanMultiPolygon_Errors(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := ScanMultiPolygon(tc.data)
+			_, _, err := ScanMultiPolygon(tc.data) // TODO
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
 			}
@@ -456,7 +456,7 @@ func TestScanCollection(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			c, err := ScanCollection(tc.data)
+			c, _, err := ScanCollection(tc.data) // TODO
 			if err != nil {
 				t.Fatalf("scan error: %v", err)
 			}
@@ -490,7 +490,7 @@ func TestScanCollection_Errors(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := ScanCollection(tc.data)
+			_, _, err := ScanCollection(tc.data) // TODO
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
 			}

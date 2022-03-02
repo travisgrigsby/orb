@@ -103,7 +103,7 @@ type Decoder struct {
 
 // Unmarshal will decode the type into a Geometry.
 func Unmarshal(data []byte) (orb.Geometry, error) {
-	g, err := wkbcommon.Unmarshal(data)
+	g, _, err := wkbcommon.Unmarshal(data)
 	if err != nil {
 		return nil, mapCommonError(err)
 	}

@@ -196,35 +196,44 @@ type Decoder struct {
 }
 
 // Unmarshal will decode the type into a Geometry.
-func Unmarshal(data []byte) (orb.Geometry, error) {
-	order, typ, data, err := unmarshalByteOrderType(data)
+func Unmarshal(data []byte) (orb.Geometry, int, error) {
+	order, typ, srid, geomData, err := unmarshalByteOrderType(data)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
+
+	var g orb.Geometry
 
 	switch typ {
 	case pointType:
-		return unmarshalPoint(order, data[5:])
+		g, err = unmarshalPoint(order, geomData)
 	case multiPointType:
-		return unmarshalMultiPoint(order, data[5:])
+		g, err = unmarshalMultiPoint(order, geomData)
 	case lineStringType:
-		return unmarshalLineString(order, data[5:])
+		g, err = unmarshalLineString(order, geomData)
 	case multiLineStringType:
-		return unmarshalMultiLineString(order, data[5:])
+		g, err = unmarshalMultiLineString(order, geomData)
 	case polygonType:
-		return unmarshalPolygon(order, data[5:])
+		g, err = unmarshalPolygon(order, geomData)
 	case multiPolygonType:
-		return unmarshalMultiPolygon(order, data[5:])
+		g, err = unmarshalMultiPolygon(order, geomData)
 	case geometryCollectionType:
+		// TODO: does this actually work?
 		g, err := NewDecoder(bytes.NewReader(data)).Decode()
 		if err == io.EOF || err == io.ErrUnexpectedEOF {
-			return nil, ErrNotWKB
+			return nil, 0, ErrNotWKB
 		}
 
-		return g, err
+		return g, srid, err
+	default:
+		return nil, 0, ErrUnsupportedGeometry
 	}
 
-	return nil, ErrUnsupportedGeometry
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return g, srid, nil
 }
 
 // NewDecoder will create a new (E)WKB decoder.
@@ -293,25 +302,44 @@ func readUint32(r io.Reader, order byteOrder, buf []byte) (uint32, error) {
 	return unmarshalUint32(order, buf), nil
 }
 
-func unmarshalByteOrderType(buf []byte) (byteOrder, uint32, []byte, error) {
-	order, typ, err := byteOrderType(buf)
+func unmarshalByteOrderType(buf []byte) (byteOrder, uint32, int, []byte, error) {
+	order, typ, srid, data, err := unmarshalByteOrderTypeDirect(buf)
 	if err == nil {
-		return order, typ, buf, nil
+		// regular (e)wkb
+		return order, typ, srid, data, nil
 	}
 
-	if len(buf) < 6 {
-		return 0, 0, nil, err
+	if len(buf) < 10 {
+		return 0, 0, 0, nil, ErrNotWKB
 	}
 
 	// The prefix is incorrect, let's see if this is data in
 	// MySQL's SRID+WKB format. So truncate the SRID prefix.
-	buf = buf[4:]
-	order, typ, err = byteOrderType(buf)
-	if err != nil || typ > 7 {
-		return 0, 0, nil, ErrNotWKB
+	order, typ, srid, data, err = unmarshalByteOrderTypeDirect(buf[4:])
+	if err != nil || typ&0x00FFFFFF > 7 {
+		return 0, 0, 0, nil, ErrNotWKB
 	}
 
-	return order, typ, buf, nil
+	return order, typ, srid, data, nil
+}
+
+func unmarshalByteOrderTypeDirect(buf []byte) (byteOrder, uint32, int, []byte, error) {
+	order, typ, err := byteOrderType(buf)
+	if err != nil {
+		return 0, 0, 0, nil, err
+	}
+
+	if typ&ewkbType == 0 {
+		// regular wkb, no srid
+		return order, typ, 0, buf[5:], nil
+	}
+
+	if len(buf) < 10 {
+		return 0, 0, 0, nil, ErrNotWKB
+	}
+
+	srid := unmarshalUint32(order, buf[5:])
+	return order, typ, int(srid), buf[9:], nil
 }
 
 func byteOrderType(buf []byte) (byteOrder, uint32, error) {

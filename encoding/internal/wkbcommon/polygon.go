@@ -99,7 +99,7 @@ func unmarshalMultiPolygon(order byteOrder, data []byte) (orb.MultiPolygon, erro
 	result := make(orb.MultiPolygon, 0, alloc)
 
 	for i := 0; i < int(num); i++ {
-		p, err := ScanPolygon(data)
+		p, _, err := ScanPolygon(data)
 		if err != nil {
 			return nil, err
 		}

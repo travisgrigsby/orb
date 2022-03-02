@@ -113,7 +113,7 @@ func unmarshalMultiPoint(order byteOrder, data []byte) (orb.MultiPoint, error) {
 	result := make(orb.MultiPoint, 0, alloc)
 
 	for i := 0; i < int(num); i++ {
-		p, err := ScanPoint(data)
+		p, _, err := ScanPoint(data)
 		if err != nil {
 			return nil, err
 		}
