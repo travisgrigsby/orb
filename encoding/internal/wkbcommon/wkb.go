@@ -61,7 +61,7 @@ func MustMarshal(geom orb.Geometry, srid int, byteOrder ...binary.ByteOrder) []b
 
 // Marshal encodes the geometry with the given byte order.
 func Marshal(geom orb.Geometry, srid int, byteOrder ...binary.ByteOrder) ([]byte, error) {
-	buf := bytes.NewBuffer(make([]byte, 0, GeomLength(geom)))
+	buf := bytes.NewBuffer(make([]byte, 0, GeomLength(geom, srid != 0)))
 
 	e := NewEncoder(buf)
 	if len(byteOrder) > 0 {
@@ -218,8 +218,7 @@ func Unmarshal(data []byte) (orb.Geometry, int, error) {
 	case multiPolygonType:
 		g, err = unmarshalMultiPolygon(order, geomData)
 	case geometryCollectionType:
-		// TODO: does this actually work?
-		g, err := NewDecoder(bytes.NewReader(data)).Decode()
+		g, _, err := NewDecoder(bytes.NewReader(data)).Decode()
 		if err == io.EOF || err == io.ErrUnexpectedEOF {
 			return nil, 0, ErrNotWKB
 		}
@@ -244,37 +243,44 @@ func NewDecoder(r io.Reader) *Decoder {
 }
 
 // Decode will decode the next geometry off of the stream.
-func (d *Decoder) Decode() (orb.Geometry, error) {
+func (d *Decoder) Decode() (orb.Geometry, int, error) {
 	buf := make([]byte, 8)
-	order, typ, err := readByteOrderType(d.r, buf)
+	order, typ, srid, err := readByteOrderType(d.r, buf)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
+	var g orb.Geometry
 	switch typ {
 	case pointType:
-		return readPoint(d.r, order, buf)
+		g, err = readPoint(d.r, order, buf)
 	case multiPointType:
-		return readMultiPoint(d.r, order, buf)
+		g, err = readMultiPoint(d.r, order, buf)
 	case lineStringType:
-		return readLineString(d.r, order, buf)
+		g, err = readLineString(d.r, order, buf)
 	case multiLineStringType:
-		return readMultiLineString(d.r, order, buf)
+		g, err = readMultiLineString(d.r, order, buf)
 	case polygonType:
-		return readPolygon(d.r, order, buf)
+		g, err = readPolygon(d.r, order, buf)
 	case multiPolygonType:
-		return readMultiPolygon(d.r, order, buf)
+		g, err = readMultiPolygon(d.r, order, buf)
 	case geometryCollectionType:
-		return readCollection(d.r, order, buf)
+		g, err = readCollection(d.r, order, buf)
+	default:
+		return nil, 0, ErrUnsupportedGeometry
 	}
 
-	return nil, ErrUnsupportedGeometry
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return g, srid, nil
 }
 
-func readByteOrderType(r io.Reader, buf []byte) (byteOrder, uint32, error) {
+func readByteOrderType(r io.Reader, buf []byte) (byteOrder, uint32, int, error) {
 	// the byte order is the first byte
 	if _, err := r.Read(buf[:1]); err != nil {
-		return 0, 0, err
+		return 0, 0, 0, err
 	}
 
 	var order byteOrder
@@ -283,16 +289,25 @@ func readByteOrderType(r io.Reader, buf []byte) (byteOrder, uint32, error) {
 	} else if buf[0] == 1 {
 		order = littleEndian
 	} else {
-		return 0, 0, ErrNotWKB
+		return 0, 0, 0, ErrNotWKB
 	}
 
 	// the type which is 4 bytes
 	typ, err := readUint32(r, order, buf[:4])
 	if err != nil {
-		return 0, 0, err
+		return 0, 0, 0, err
 	}
 
-	return order, typ, nil
+	if typ&ewkbType == 0 {
+		return order, typ, 0, nil
+	}
+
+	srid, err := readUint32(r, order, buf[:4])
+	if err != nil {
+		return 0, 0, 0, err
+	}
+
+	return order, typ & 0x0ff, int(srid), nil
 }
 
 func readUint32(r io.Reader, order byteOrder, buf []byte) (uint32, error) {
@@ -306,7 +321,7 @@ func unmarshalByteOrderType(buf []byte) (byteOrder, uint32, int, []byte, error) 
 	order, typ, srid, data, err := unmarshalByteOrderTypeDirect(buf)
 	if err == nil {
 		// regular (e)wkb
-		return order, typ, srid, data, nil
+		return order, typ & 0x0FF, srid, data, nil
 	}
 
 	if len(buf) < 10 {
@@ -320,7 +335,7 @@ func unmarshalByteOrderType(buf []byte) (byteOrder, uint32, int, []byte, error) 
 		return 0, 0, 0, nil, ErrNotWKB
 	}
 
-	return order, typ, srid, data, nil
+	return order, typ & 0x0FF, srid, data, nil
 }
 
 func unmarshalByteOrderTypeDirect(buf []byte) (byteOrder, uint32, int, []byte, error) {
@@ -369,42 +384,47 @@ func unmarshalUint32(order byteOrder, buf []byte) uint32 {
 }
 
 // GeomLength helps to do preallocation during a marshal.
-func GeomLength(geom orb.Geometry) int {
+func GeomLength(geom orb.Geometry, ewkb bool) int {
+	ewkbExtra := 0
+	if ewkb {
+		ewkbExtra = 4
+	}
+
 	switch g := geom.(type) {
 	case orb.Point:
-		return 21
+		return 21 + ewkbExtra
 	case orb.MultiPoint:
-		return 9 + 21*len(g)
+		return 9 + 21*len(g) + ewkbExtra
 	case orb.LineString:
-		return 9 + 16*len(g)
+		return 9 + 16*len(g) + ewkbExtra
 	case orb.MultiLineString:
 		sum := 0
 		for _, ls := range g {
 			sum += 9 + 16*len(ls)
 		}
 
-		return 9 + sum
+		return 9 + sum + ewkbExtra
 	case orb.Polygon:
 		sum := 0
 		for _, r := range g {
 			sum += 4 + 16*len(r)
 		}
 
-		return 9 + sum
+		return 9 + sum + ewkbExtra
 	case orb.MultiPolygon:
 		sum := 0
 		for _, c := range g {
-			sum += GeomLength(c)
+			sum += GeomLength(c, false)
 		}
 
-		return 9 + sum
+		return 9 + sum + ewkbExtra
 	case orb.Collection:
 		sum := 0
 		for _, c := range g {
-			sum += GeomLength(c)
+			sum += GeomLength(c, false)
 		}
 
-		return 9 + sum
+		return 9 + sum + ewkbExtra
 	}
 
 	return 0

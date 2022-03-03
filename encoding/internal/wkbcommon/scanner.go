@@ -193,7 +193,7 @@ func ScanMultiPolygon(data []byte) (orb.MultiPolygon, int, error) {
 
 // ScanCollection takes binary wkb and decodes it into a collection.
 func ScanCollection(data []byte) (orb.Collection, int, error) {
-	m, err := NewDecoder(bytes.NewReader(data)).Decode()
+	m, srid, err := NewDecoder(bytes.NewReader(data)).Decode()
 	if err == io.EOF || err == io.ErrUnexpectedEOF {
 		return nil, 0, ErrNotWKB
 	}
@@ -204,7 +204,7 @@ func ScanCollection(data []byte) (orb.Collection, int, error) {
 
 	switch p := m.(type) {
 	case orb.Collection:
-		return p, 0, nil
+		return p, srid, nil
 	}
 
 	return nil, 0, ErrIncorrectGeometry

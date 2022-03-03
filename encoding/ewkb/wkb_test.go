@@ -3,6 +3,7 @@ package ewkb
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/hex"
 	"io/ioutil"
 	"testing"
 
@@ -20,6 +21,15 @@ func TestMustMarshal(t *testing.T) {
 	for _, g := range orb.AllGeometries {
 		MustMarshal(g, 0, binary.BigEndian)
 	}
+}
+
+func MustDecodeHex(s string) []byte {
+	b, err := hex.DecodeString(s)
+	if err != nil {
+		panic(err)
+	}
+
+	return b
 }
 
 func BenchmarkEncode_Point(b *testing.B) {
@@ -47,11 +57,11 @@ func BenchmarkEncode_LineString(b *testing.B) {
 	}
 }
 
-func compare(t testing.TB, e orb.Geometry, b []byte) {
+func compare(t testing.TB, e orb.Geometry, s int, b []byte) {
 	t.Helper()
 
 	// Decoder
-	g, _, err := NewDecoder(bytes.NewReader(b)).Decode() // TODO
+	g, srid, err := NewDecoder(bytes.NewReader(b)).Decode()
 	if err != nil {
 		t.Fatalf("decoder: read error: %v", err)
 	}
@@ -60,8 +70,12 @@ func compare(t testing.TB, e orb.Geometry, b []byte) {
 		t.Errorf("decoder: incorrect geometry: %v != %v", g, e)
 	}
 
+	if srid != s {
+		t.Errorf("decoder: incorrect srid: %v != %v", srid, s)
+	}
+
 	// Umarshal
-	g, _, err = Unmarshal(b) // TODO
+	g, srid, err = Unmarshal(b) // TODO
 	if err != nil {
 		t.Fatalf("unmarshal: read error: %v", err)
 	}
@@ -70,11 +84,15 @@ func compare(t testing.TB, e orb.Geometry, b []byte) {
 		t.Errorf("unmarshal: incorrect geometry: %v != %v", g, e)
 	}
 
+	if srid != s {
+		t.Errorf("decoder: incorrect srid: %v != %v", srid, s)
+	}
+
 	var data []byte
 	if b[0] == 0 {
-		data, err = Marshal(g, 0, binary.BigEndian) // TODO
+		data, err = Marshal(g, srid, binary.BigEndian)
 	} else {
-		data, err = Marshal(g, 0, binary.LittleEndian) // TODO
+		data, err = Marshal(g, srid, binary.LittleEndian)
 	}
 	if err != nil {
 		t.Fatalf("marshal error: %v", err)
@@ -87,7 +105,7 @@ func compare(t testing.TB, e orb.Geometry, b []byte) {
 	}
 
 	// preallocation
-	if len(data) != wkbcommon.GeomLength(e) {
-		t.Errorf("prealloc length: %v != %v", len(data), wkbcommon.GeomLength(e))
+	if l := wkbcommon.GeomLength(e, s != 0); len(data) != l {
+		t.Errorf("prealloc length: %v != %v", len(data), l)
 	}
 }

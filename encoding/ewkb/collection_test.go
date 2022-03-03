@@ -13,7 +13,8 @@ var (
 	}
 	testCollectionData = []byte{
 		//01    02    03    04    05    06    07    08
-		0x01, 0x07, 0x00, 0x00, 0x00,
+		0x01, 0x07, 0x00, 0x00, 0x20,
+		0xE6, 0x10, 0x00, 0x00, // SRID
 		0x02, 0x00, 0x00, 0x00, // Number of Geometries in Collection
 		0x01,                   // Byte order marker little
 		0x01, 0x00, 0x00, 0x00, // Type (1) Point
@@ -37,24 +38,33 @@ func TestCollection(t *testing.T) {
 
 	cases := []struct {
 		name     string
+		srid     int
 		data     []byte
 		expected orb.Collection
 	}{
 		{
 			name:     "collection",
+			srid:     4326,
 			data:     testCollectionData,
 			expected: testCollection,
 		},
 		{
 			name:     "large",
-			data:     MustMarshal(large, 0), // TODO
+			srid:     0,
+			data:     MustMarshal(large, 0),
+			expected: large,
+		},
+		{
+			name:     "large with srid",
+			srid:     123,
+			data:     MustMarshal(large, 123),
 			expected: large,
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			compare(t, tc.expected, tc.data)
+			compare(t, tc.expected, tc.srid, tc.data)
 		})
 	}
 }

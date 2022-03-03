@@ -21,7 +21,7 @@ func readCollection(r io.Reader, order byteOrder, buf []byte) (orb.Collection, e
 
 	d := NewDecoder(r)
 	for i := 0; i < int(num); i++ {
-		geom, err := d.Decode()
+		geom, _, err := d.Decode()
 		if err != nil {
 			return nil, err
 		}
@@ -39,7 +39,7 @@ func (e *Encoder) writeCollection(c orb.Collection, srid int) error {
 	}
 
 	for _, geom := range c {
-		err := e.Encode(geom, 0) // TODO
+		err := e.Encode(geom, 0)
 		if err != nil {
 			return err
 		}

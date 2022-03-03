@@ -101,7 +101,7 @@ func readMultiLineString(r io.Reader, order byteOrder, buf []byte) (orb.MultiLin
 	result := make(orb.MultiLineString, 0, alloc)
 
 	for i := 0; i < int(num); i++ {
-		lOrder, typ, err := readByteOrderType(r, buf)
+		lOrder, typ, _, err := readByteOrderType(r, buf)
 		if err != nil {
 			return nil, err
 		}

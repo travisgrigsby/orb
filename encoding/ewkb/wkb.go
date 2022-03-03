@@ -98,7 +98,7 @@ func MustMarshal(geom orb.Geometry, srid int, byteOrder ...binary.ByteOrder) []b
 
 // Marshal encodes the geometry with the given byte order.
 func Marshal(geom orb.Geometry, srid int, byteOrder ...binary.ByteOrder) ([]byte, error) {
-	buf := bytes.NewBuffer(make([]byte, 0, wkbcommon.GeomLength(geom)))
+	buf := bytes.NewBuffer(make([]byte, 0, wkbcommon.GeomLength(geom, srid != 0)))
 
 	e := NewEncoder(buf)
 	e.SetSRID(srid)
@@ -168,10 +168,10 @@ func NewDecoder(r io.Reader) *Decoder {
 
 // Decode will decode the next geometry off of the stream.
 func (d *Decoder) Decode() (orb.Geometry, int, error) {
-	g, err := d.d.Decode()
+	g, srid, err := d.d.Decode()
 	if err != nil {
 		return nil, 0, mapCommonError(err)
 	}
 
-	return g, 0, nil
+	return g, srid, nil
 }

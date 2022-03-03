@@ -37,6 +37,7 @@ func TestCollection(t *testing.T) {
 
 	cases := []struct {
 		name     string
+		srid     int
 		data     []byte
 		expected orb.Collection
 	}{
@@ -47,14 +48,20 @@ func TestCollection(t *testing.T) {
 		},
 		{
 			name:     "large",
-			data:     MustMarshal(large, 0), // TODO
+			data:     MustMarshal(large, 0),
+			expected: large,
+		},
+		{
+			name:     "large with srid",
+			srid:     475858,
+			data:     MustMarshal(large, 475858),
 			expected: large,
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			compare(t, tc.expected, tc.data)
+			compare(t, tc.expected, tc.srid, tc.data)
 		})
 	}
 }

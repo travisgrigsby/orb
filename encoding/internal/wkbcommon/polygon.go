@@ -130,7 +130,7 @@ func readMultiPolygon(r io.Reader, order byteOrder, buf []byte) (orb.MultiPolygo
 	result := make(orb.MultiPolygon, 0, alloc)
 
 	for i := 0; i < int(num); i++ {
-		pOrder, typ, err := readByteOrderType(r, buf)
+		pOrder, typ, _, err := readByteOrderType(r, buf)
 		if err != nil {
 			return nil, err
 		}

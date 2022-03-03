@@ -23,6 +23,7 @@ func TestLineString(t *testing.T) {
 
 	cases := []struct {
 		name     string
+		srid     int
 		data     []byte
 		expected orb.LineString
 	}{
@@ -33,14 +34,20 @@ func TestLineString(t *testing.T) {
 		},
 		{
 			name:     "large line string",
-			data:     MustMarshal(large, 0), // TODO
+			data:     MustMarshal(large, 0),
+			expected: large,
+		},
+		{
+			name:     "large line string with srid",
+			srid:     4326,
+			data:     MustMarshal(large, 4326),
 			expected: large,
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			compare(t, tc.expected, tc.data)
+			compare(t, tc.expected, tc.srid, tc.data)
 		})
 	}
 }
@@ -101,6 +108,7 @@ func TestMultiLineString(t *testing.T) {
 
 	cases := []struct {
 		name     string
+		srid     int
 		data     []byte
 		expected orb.MultiLineString
 	}{
@@ -116,14 +124,20 @@ func TestMultiLineString(t *testing.T) {
 		},
 		{
 			name:     "large",
-			data:     MustMarshal(large, 0), // TODO
+			data:     MustMarshal(large, 0),
+			expected: large,
+		},
+		{
+			name:     "large with srid",
+			srid:     4326,
+			data:     MustMarshal(large, 4326),
 			expected: large,
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			compare(t, tc.expected, tc.data)
+			compare(t, tc.expected, tc.srid, tc.data)
 		})
 	}
 }

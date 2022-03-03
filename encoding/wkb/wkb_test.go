@@ -87,8 +87,8 @@ func compare(t testing.TB, e orb.Geometry, b []byte) {
 	}
 
 	// preallocation
-	if len(data) != wkbcommon.GeomLength(e) {
-		t.Errorf("prealloc length: %v != %v", len(data), wkbcommon.GeomLength(e))
+	if l := wkbcommon.GeomLength(e, false); len(data) != l {
+		t.Errorf("prealloc length: %v != %v", len(data), l)
 	}
 
 	// Scanner
