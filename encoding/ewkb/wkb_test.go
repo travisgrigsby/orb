@@ -75,7 +75,7 @@ func compare(t testing.TB, e orb.Geometry, s int, b []byte) {
 	}
 
 	// Umarshal
-	g, srid, err = Unmarshal(b) // TODO
+	g, srid, err = Unmarshal(b)
 	if err != nil {
 		t.Fatalf("unmarshal: read error: %v", err)
 	}

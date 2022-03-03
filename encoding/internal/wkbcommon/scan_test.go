@@ -68,7 +68,7 @@ func TestScanPoint(t *testing.T) {
 	}
 }
 
-func TestScanPoint_Errors(t *testing.T) {
+func TestScanPoint_errors(t *testing.T) {
 	// error conditions
 	cases := []struct {
 		name string
@@ -157,7 +157,7 @@ func TestScanMultiPoint(t *testing.T) {
 	}
 }
 
-func TestScanMultiPoint_Errors(t *testing.T) {
+func TestScanMultiPoint_errors(t *testing.T) {
 	cases := []struct {
 		name string
 		data []byte
@@ -235,7 +235,7 @@ func TestScanLineString(t *testing.T) {
 	}
 }
 
-func TestScanLineString_Errors(t *testing.T) {
+func TestScanLineString_errors(t *testing.T) {
 	cases := []struct {
 		name string
 		data []byte
@@ -318,7 +318,7 @@ func TestScanMultiLineString(t *testing.T) {
 	}
 }
 
-func TestScanMultiLineString_Errors(t *testing.T) {
+func TestScanMultiLineString_errors(t *testing.T) {
 	cases := []struct {
 		name string
 		data []byte
@@ -395,7 +395,7 @@ func TestScanPolygon(t *testing.T) {
 	}
 }
 
-func TestScanPolygon_Errors(t *testing.T) {
+func TestScanPolygon_errors(t *testing.T) {
 	cases := []struct {
 		name string
 		data []byte
@@ -478,7 +478,7 @@ func TestScanMultiPolygon(t *testing.T) {
 	}
 }
 
-func TestScanMultiPolygon_Errors(t *testing.T) {
+func TestScanMultiPolygon_errors(t *testing.T) {
 	cases := []struct {
 		name string
 		data []byte
@@ -546,7 +546,7 @@ func TestScanCollection(t *testing.T) {
 	}
 }
 
-func TestScanCollection_Errors(t *testing.T) {
+func TestScanCollection_errors(t *testing.T) {
 	cases := []struct {
 		name string
 		data []byte

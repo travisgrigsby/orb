@@ -6,31 +6,37 @@ import (
 	"github.com/paulmach/orb"
 )
 
-var (
-	testPoint     = orb.Point{-117.15906619141342, 32.71628524142945}
-	testPointData = []byte{
-		//01    02    03    04    05    06    07    08
-		0x01, 0x01, 0x00, 0x00, 0x20,
-		0xE6, 0x10, 0x00, 0x00,
-		0x46, 0x81, 0xF6, 0x23, 0x2E, 0x4A, 0x5D, 0xC0,
-		0x03, 0x46, 0x1B, 0x3C, 0xAF, 0x5B, 0x40, 0x40,
-	}
-)
-
 func TestPoint(t *testing.T) {
 	cases := []struct {
 		name     string
-		srid     int
 		data     []byte
+		srid     int
 		expected orb.Point
 	}{
 		{
 			name:     "point",
+			data:     MustDecodeHex("0101000020E6100000000000000000F03F0000000000000040"),
 			srid:     4326,
-			data:     testPointData,
-			expected: testPoint,
+			expected: orb.Point{1, 2},
 		},
-		// TODO more tests
+		{
+			name:     "zero point",
+			data:     MustDecodeHex("01010000200400000000000000000000000000000000000000"),
+			srid:     4,
+			expected: orb.Point{0, 0},
+		},
+		{
+			name:     "srid 4269",
+			data:     MustDecodeHex("0101000020AD1000000000000000C05EC00000000000004140"),
+			srid:     4269,
+			expected: orb.Point{-123, 34},
+		},
+		{
+			name:     "srid 4267",
+			data:     MustDecodeHex("0101000020AB1000000000000000C05EC00000000000004140"),
+			srid:     4267,
+			expected: orb.Point{-123, 34},
+		},
 	}
 
 	for _, tc := range cases {
@@ -40,42 +46,6 @@ func TestPoint(t *testing.T) {
 	}
 }
 
-var (
-	testMultiPoint     = orb.MultiPoint{{10, 40}, {40, 30}, {20, 20}, {30, 10}}
-	testMultiPointData = []byte{
-		0x01, 0x04, 0x00, 0x00, 0x20,
-		0xE6, 0x10, 0x00, 0x00, // SRID
-		0x04, 0x00, 0x00, 0x00, // Number of Points (4)
-		0x01,                   // Byte Order Little
-		0x01, 0x00, 0x00, 0x00, // Type Point (1)
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x24, 0x40, // X1 10
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x44, 0x40, // Y1 40
-		0x01,                   // Byte Order Little
-		0x01, 0x00, 0x00, 0x00, // Type Point (1)
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x44, 0x40, // X2 40
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3e, 0x40, // Y2 30
-		0x01,                   // Byte Order Little
-		0x01, 0x00, 0x00, 0x00, // Type Point (1)
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x34, 0x40, // X3 20
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x34, 0x40, // Y3 20
-		0x01,                   // Byte Order Little
-		0x01, 0x00, 0x00, 0x00, // Type Point (1)
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3e, 0x40, // X4 30
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x24, 0x40, // Y4 10
-	}
-
-	testMultiPointSingle     = orb.MultiPoint{{10, 40}}
-	testMultiPointSingleData = []byte{
-		0x01, 0x04, 0x00, 0x00, 0x20,
-		0xE6, 0x10, 0x00, 0x00, // SRID
-		0x01, 0x00, 0x00, 0x00, // Number of Points (4)
-		0x01,                   // Byte Order Little
-		0x01, 0x00, 0x00, 0x00, // Type Point (1)
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x24, 0x40, // X1 10
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x44, 0x40, // Y1 40
-	}
-)
-
 func TestMultiPoint(t *testing.T) {
 	large := orb.MultiPoint{}
 	for i := 0; i < maxPointsAlloc+100; i++ {
@@ -84,29 +54,28 @@ func TestMultiPoint(t *testing.T) {
 
 	cases := []struct {
 		name     string
-		srid     int
 		data     []byte
+		srid     int
 		expected orb.MultiPoint
 	}{
 		{
-			name:     "multi point",
-			srid:     4326,
-			data:     testMultiPointData,
-			expected: testMultiPoint,
-		},
-		{
-			name:     "single multi point",
-			srid:     4326,
-			data:     testMultiPointSingleData,
-			expected: testMultiPointSingle,
-		},
-		{
 			name:     "large multi point",
-			srid:     4326,
 			data:     MustMarshal(large, 4326),
+			srid:     4326,
 			expected: large,
 		},
-		// TODO more tests
+		{
+			name:     "one point",
+			data:     MustDecodeHex("0104000020e6100000010000000101000000000000000000f03f0000000000000040"),
+			srid:     4326,
+			expected: orb.MultiPoint{{1, 2}},
+		},
+		{
+			name:     "two points",
+			data:     MustDecodeHex("0104000020e6100000020000000101000000000000000000f03f0000000000000040010100000000000000000008400000000000001040"),
+			srid:     4326,
+			expected: orb.MultiPoint{{1, 2}, {3, 4}},
+		},
 	}
 
 	for _, tc := range cases {

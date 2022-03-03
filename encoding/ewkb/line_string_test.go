@@ -6,15 +6,6 @@ import (
 	"github.com/paulmach/orb"
 )
 
-var (
-	testLineString     = orb.LineString{{1, 2}, {3, 4}}
-	testLineStringData = []byte{
-		1, 2, 0, 0, 0,
-		2, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 0, 64,
-		0, 0, 0, 0, 0, 0, 8, 64, 0, 0, 0, 0, 0, 0, 16, 64}
-)
-
 func TestLineString(t *testing.T) {
 	large := orb.LineString{}
 	for i := 0; i < maxPointsAlloc+100; i++ {
@@ -23,22 +14,28 @@ func TestLineString(t *testing.T) {
 
 	cases := []struct {
 		name     string
-		srid     int
 		data     []byte
+		srid     int
 		expected orb.LineString
 	}{
 		{
-			name:     "line string",
-			data:     testLineStringData,
-			expected: testLineString,
-		},
-		{
 			name:     "large line string",
-			srid:     4326,
 			data:     MustMarshal(large, 4326),
+			srid:     4326,
 			expected: large,
 		},
-		// TODO: more tests
+		{
+			name:     "line string",
+			data:     MustDecodeHex("0102000020E610000002000000CDCCCCCCCC0C5FC00000000000004540713D0AD7A3005EC01F85EB51B8FE4440"),
+			srid:     4326,
+			expected: orb.LineString{{-124.2, 42}, {-120.01, 41.99}},
+		},
+		{
+			name:     "another line string",
+			data:     MustDecodeHex("0020000002000010e6000000023ff0000000000000400000000000000040080000000000004010000000000000"),
+			srid:     4326,
+			expected: orb.LineString{{1, 2}, {3, 4}},
+		},
 	}
 
 	for _, tc := range cases {
@@ -48,54 +45,6 @@ func TestLineString(t *testing.T) {
 	}
 }
 
-var (
-	testMultiLineString = orb.MultiLineString{
-		{{10, 10}, {20, 20}, {10, 40}},
-		{{40, 40}, {30, 30}, {40, 20}, {30, 10}},
-	}
-	testMultiLineStringData = []byte{
-		0x01, 0x05, 0x00, 0x00, 0x00,
-		0x02, 0x00, 0x00, 0x00, // Number of Lines 2
-		0x01,                   // Encoding Little
-		0x02, 0x00, 0x00, 0x00, // Type
-		0x03, 0x00, 0x00, 0x00, // Number of points 3
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x24, 0x40, // X1 10
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x24, 0x40, // Y1 10
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x34, 0x40, // X2 20
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x34, 0x40, // Y2 20
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x24, 0x40, // X3 10
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x44, 0x40, // Y3 40
-		0x01,                   // Encoding Little
-		0x02, 0x00, 0x00, 0x00, // Type LineString
-		0x04, 0x00, 0x00, 0x00, // Number of Points 4
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x44, 0x40, // X1 40
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x44, 0x40, // Y1 40
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3e, 0x40, // X2 30
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3e, 0x40, // Y2 40
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x44, 0x40, // X3 40
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x34, 0x40, // Y3 20
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3e, 0x40, // X4 30
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x24, 0x40, // Y4 10
-	}
-
-	testMultiLineStringSingle = orb.MultiLineString{
-		{{10, 10}, {20, 20}, {10, 40}},
-	}
-	testMultiLineStringSingleData = []byte{
-		0x01, 0x05, 0x00, 0x00, 0x00,
-		0x01, 0x00, 0x00, 0x00, // Number of Lines 2
-		0x01,                   // Encoding Little
-		0x02, 0x00, 0x00, 0x00, // Type
-		0x03, 0x00, 0x00, 0x00, // Number of points 3
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x24, 0x40, // X1 10
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x24, 0x40, // Y1 10
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x34, 0x40, // X2 20
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x34, 0x40, // Y2 20
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x24, 0x40, // X3 10
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x44, 0x40, // Y3 40
-	}
-)
-
 func TestMultiLineString(t *testing.T) {
 	large := orb.MultiLineString{}
 	for i := 0; i < maxMultiAlloc+100; i++ {
@@ -104,27 +53,28 @@ func TestMultiLineString(t *testing.T) {
 
 	cases := []struct {
 		name     string
-		srid     int
 		data     []byte
+		srid     int
 		expected orb.MultiLineString
 	}{
-		{
-			name:     "multi line string",
-			data:     testMultiLineStringData,
-			expected: testMultiLineString,
-		},
-		{
-			name:     "single multi line string",
-			data:     testMultiLineStringSingleData,
-			expected: testMultiLineStringSingle,
-		},
 		{
 			name:     "large",
 			srid:     4326,
 			data:     MustMarshal(large, 4326),
 			expected: large,
 		},
-		// TODO more tests
+		{
+			name:     "one string",
+			data:     MustDecodeHex("0105000020e610000001000000010200000002000000000000000000f03f000000000000004000000000000008400000000000001040"),
+			srid:     4326,
+			expected: orb.MultiLineString{{{1, 2}, {3, 4}}},
+		},
+		{
+			name:     "two strings",
+			data:     MustDecodeHex("0020000005000010e6000000020000000002000000023ff000000000000040000000000000004008000000000000401000000000000000000000020000000240140000000000004018000000000000401c0000000000004020000000000000"),
+			srid:     4326,
+			expected: orb.MultiLineString{{{1, 2}, {3, 4}}, {{5, 6}, {7, 8}}},
+		},
 	}
 
 	for _, tc := range cases {
