@@ -16,9 +16,9 @@ func unmarshalPolygon(order byteOrder, data []byte) (orb.Polygon, error) {
 	data = data[4:]
 
 	alloc := num
-	if alloc > maxMultiAlloc {
+	if alloc > MaxMultiAlloc {
 		// invalid data can come in here and allocate tons of memory.
-		alloc = maxMultiAlloc
+		alloc = MaxMultiAlloc
 	}
 	result := make(orb.Polygon, 0, alloc)
 
@@ -42,9 +42,9 @@ func readPolygon(r io.Reader, order byteOrder, buf []byte) (orb.Polygon, error) 
 	}
 
 	alloc := num
-	if alloc > maxMultiAlloc {
+	if alloc > MaxMultiAlloc {
 		// invalid data can come in here and allocate tons of memory.
-		alloc = maxMultiAlloc
+		alloc = MaxMultiAlloc
 	}
 	result := make(orb.Polygon, 0, alloc)
 
@@ -92,9 +92,9 @@ func unmarshalMultiPolygon(order byteOrder, data []byte) (orb.MultiPolygon, erro
 	data = data[4:]
 
 	alloc := num
-	if alloc > maxMultiAlloc {
+	if alloc > MaxMultiAlloc {
 		// invalid data can come in here and allocate tons of memory.
-		alloc = maxMultiAlloc
+		alloc = MaxMultiAlloc
 	}
 	result := make(orb.MultiPolygon, 0, alloc)
 
@@ -123,9 +123,9 @@ func readMultiPolygon(r io.Reader, order byteOrder, buf []byte) (orb.MultiPolygo
 	}
 
 	alloc := num
-	if alloc > maxMultiAlloc {
+	if alloc > MaxMultiAlloc {
 		// invalid data can come in here and allocate tons of memory.
-		alloc = maxMultiAlloc
+		alloc = MaxMultiAlloc
 	}
 	result := make(orb.MultiPolygon, 0, alloc)
 

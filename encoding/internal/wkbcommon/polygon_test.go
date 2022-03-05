@@ -30,7 +30,7 @@ var (
 
 func TestPolygon(t *testing.T) {
 	large := orb.Polygon{}
-	for i := 0; i < maxMultiAlloc+100; i++ {
+	for i := 0; i < MaxMultiAlloc+100; i++ {
 		large = append(large, orb.Ring{})
 	}
 
@@ -173,7 +173,7 @@ var (
 
 func TestMultiPolygon(t *testing.T) {
 	large := orb.MultiPolygon{}
-	for i := 0; i < maxMultiAlloc+100; i++ {
+	for i := 0; i < MaxMultiAlloc+100; i++ {
 		large = append(large, orb.Polygon{})
 	}
 

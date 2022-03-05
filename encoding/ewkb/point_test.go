@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/paulmach/orb"
+	"github.com/paulmach/orb/encoding/internal/wkbcommon"
 )
 
 func TestPoint(t *testing.T) {
@@ -48,7 +49,7 @@ func TestPoint(t *testing.T) {
 
 func TestMultiPoint(t *testing.T) {
 	large := orb.MultiPoint{}
-	for i := 0; i < maxPointsAlloc+100; i++ {
+	for i := 0; i < wkbcommon.MaxPointsAlloc+100; i++ {
 		large = append(large, orb.Point{float64(i), float64(-i)})
 	}
 

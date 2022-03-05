@@ -21,9 +21,9 @@ func unmarshalPoints(order byteOrder, data []byte) ([]orb.Point, error) {
 	}
 
 	alloc := num
-	if alloc > maxPointsAlloc {
+	if alloc > MaxPointsAlloc {
 		// invalid data can come in here and allocate tons of memory.
-		alloc = maxPointsAlloc
+		alloc = MaxPointsAlloc
 	}
 	result := make([]orb.Point, 0, alloc)
 
@@ -106,9 +106,9 @@ func unmarshalMultiPoint(order byteOrder, data []byte) (orb.MultiPoint, error) {
 	data = data[4:]
 
 	alloc := num
-	if alloc > maxMultiAlloc {
+	if alloc > MaxMultiAlloc {
 		// invalid data can come in here and allocate tons of memory.
-		alloc = maxMultiAlloc
+		alloc = MaxMultiAlloc
 	}
 	result := make(orb.MultiPoint, 0, alloc)
 
@@ -132,9 +132,9 @@ func readMultiPoint(r io.Reader, order byteOrder, buf []byte) (orb.MultiPoint, e
 	}
 
 	alloc := num
-	if alloc > maxPointsAlloc {
+	if alloc > MaxPointsAlloc {
 		// invalid data can come in here and allocate tons of memory.
-		alloc = maxPointsAlloc
+		alloc = MaxPointsAlloc
 	}
 	result := make(orb.MultiPoint, 0, alloc)
 

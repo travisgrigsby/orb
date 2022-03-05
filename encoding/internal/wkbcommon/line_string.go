@@ -24,9 +24,9 @@ func readLineString(r io.Reader, order byteOrder, buf []byte) (orb.LineString, e
 	}
 
 	alloc := num
-	if alloc > maxPointsAlloc {
+	if alloc > MaxPointsAlloc {
 		// invalid data can come in here and allocate tons of memory.
-		alloc = maxPointsAlloc
+		alloc = MaxPointsAlloc
 	}
 	result := make(orb.LineString, 0, alloc)
 
@@ -68,9 +68,9 @@ func unmarshalMultiLineString(order byteOrder, data []byte) (orb.MultiLineString
 	data = data[4:]
 
 	alloc := num
-	if alloc > maxMultiAlloc {
+	if alloc > MaxMultiAlloc {
 		// invalid data can come in here and allocate tons of memory.
-		alloc = maxMultiAlloc
+		alloc = MaxMultiAlloc
 	}
 	result := make(orb.MultiLineString, 0, alloc)
 
@@ -94,9 +94,9 @@ func readMultiLineString(r io.Reader, order byteOrder, buf []byte) (orb.MultiLin
 	}
 
 	alloc := num
-	if alloc > maxMultiAlloc {
+	if alloc > MaxMultiAlloc {
 		// invalid data can come in here and allocate tons of memory.
-		alloc = maxMultiAlloc
+		alloc = MaxMultiAlloc
 	}
 	result := make(orb.MultiLineString, 0, alloc)
 

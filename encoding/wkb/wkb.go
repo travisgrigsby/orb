@@ -11,31 +11,6 @@ import (
 	"github.com/paulmach/orb/encoding/internal/wkbcommon"
 )
 
-// byteOrder represents little or big endian encoding.
-// We don't use binary.ByteOrder because that is an interface
-// that leaks to the heap all over the place.
-type byteOrder int
-
-const bigEndian byteOrder = 0
-const littleEndian byteOrder = 1
-
-const (
-	pointType              uint32 = 1
-	lineStringType         uint32 = 2
-	polygonType            uint32 = 3
-	multiPointType         uint32 = 4
-	multiLineStringType    uint32 = 5
-	multiPolygonType       uint32 = 6
-	geometryCollectionType uint32 = 7
-)
-
-const (
-	// limits so that bad data can't come in and preallocate tons of memory.
-	// Well formed data with less elements will allocate the correct amount just fine.
-	maxPointsAlloc = 10000
-	maxMultiAlloc  = 100
-)
-
 // DefaultByteOrder is the order used for marshalling or encoding
 // is none is specified.
 var DefaultByteOrder binary.ByteOrder = binary.LittleEndian

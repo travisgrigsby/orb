@@ -13,9 +13,9 @@ func readCollection(r io.Reader, order byteOrder, buf []byte) (orb.Collection, e
 	}
 
 	alloc := num
-	if alloc > maxMultiAlloc {
+	if alloc > MaxMultiAlloc {
 		// invalid data can come in here and allocate tons of memory.
-		alloc = maxMultiAlloc
+		alloc = MaxMultiAlloc
 	}
 	result := make(orb.Collection, 0, alloc)
 

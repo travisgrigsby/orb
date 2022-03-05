@@ -31,8 +31,8 @@ const (
 const (
 	// limits so that bad data can't come in and preallocate tons of memory.
 	// Well formed data with less elements will allocate the correct amount just fine.
-	maxPointsAlloc = 10000
-	maxMultiAlloc  = 100
+	MaxPointsAlloc = 10000
+	MaxMultiAlloc  = 100
 )
 
 // DefaultByteOrder is the order used for marshalling or encoding
