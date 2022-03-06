@@ -116,8 +116,13 @@ func (e *Encoder) SetSRID(srid int) *Encoder {
 }
 
 // Encode will write the geometry encoded as EWKB to the given writer.
-func (e *Encoder) Encode(geom orb.Geometry) error {
-	return e.e.Encode(geom, e.srid)
+func (e *Encoder) Encode(geom orb.Geometry, srid ...int) error {
+	s := e.srid
+	if len(srid) > 0 {
+		s = srid[0]
+	}
+
+	return e.e.Encode(geom, s)
 }
 
 // Decoder can decoder WKB geometry off of the stream.

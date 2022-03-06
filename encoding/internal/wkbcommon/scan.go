@@ -50,7 +50,7 @@ func ScanPoint(data []byte) (orb.Point, int, error) {
 			return orb.Point{}, 0, err
 		}
 		if len(mp) == 1 {
-			return mp[0], 0, nil
+			return mp[0], srid, nil
 		}
 	}
 

@@ -1,4 +1,4 @@
-package wkb
+package ewkb
 
 import (
 	"database/sql"
@@ -28,6 +28,7 @@ var (
 //	}
 type GeometryScanner struct {
 	g        interface{}
+	SRID     int
 	Geometry orb.Geometry
 	Valid    bool // Valid is true if the geometry is not NULL
 }
@@ -94,94 +95,70 @@ func (s *GeometryScanner) Scan(d interface{}) error {
 		data = data[:n]
 	}
 
-	var e error
-
 	switch g := s.g.(type) {
 	case nil:
-		m, err := Unmarshal(data)
+		m, srid, err := Unmarshal(data)
 		if err != nil {
 			return err
 		}
 
+		s.SRID = srid
 		s.Geometry = m
 		s.Valid = true
 		return nil
 	case *orb.Point:
-		p, _, err := wkbcommon.ScanPoint(data)
-		if err == wkbcommon.ErrNotWKBHeader {
-			p, _, e = wkbcommon.ScanPoint(data[4:])
-			if e != wkbcommon.ErrNotWKBHeader {
-				err = e // nil or incorrect type, e.g. decoding line string
-			}
-		}
-
+		p, srid, err := wkbcommon.ScanPoint(data)
 		if err != nil {
 			return mapCommonError(err)
 		}
 
 		*g = p
+		s.SRID = srid
 		s.Geometry = p
 		s.Valid = true
 		return nil
 	case *orb.MultiPoint:
-		m, _, err := wkbcommon.ScanMultiPoint(data)
-		if err == wkbcommon.ErrNotWKBHeader {
-			m, _, e = wkbcommon.ScanMultiPoint(data[4:])
-			if e != wkbcommon.ErrNotWKBHeader {
-				err = e
-			}
-		}
-
+		m, srid, err := wkbcommon.ScanMultiPoint(data)
 		if err != nil {
 			return mapCommonError(err)
 		}
 
 		*g = m
+		s.SRID = srid
 		s.Geometry = m
 		s.Valid = true
 		return nil
 	case *orb.LineString:
-		l, _, err := wkbcommon.ScanLineString(data)
-		if err == wkbcommon.ErrNotWKBHeader {
-			l, _, e = wkbcommon.ScanLineString(data[4:])
-			if e != wkbcommon.ErrNotWKBHeader {
-				err = e
-			}
-		}
-
+		l, srid, err := wkbcommon.ScanLineString(data)
 		if err != nil {
 			return mapCommonError(err)
 		}
 
 		*g = l
+		s.SRID = srid
 		s.Geometry = l
 		s.Valid = true
 		return nil
 	case *orb.MultiLineString:
-		m, _, err := wkbcommon.ScanMultiLineString(data)
-		if err == wkbcommon.ErrNotWKBHeader {
-			m, _, e = wkbcommon.ScanMultiLineString(data[4:])
-			if e != wkbcommon.ErrNotWKBHeader {
-				err = e
-			}
-		}
-
+		m, srid, err := wkbcommon.ScanMultiLineString(data)
 		if err != nil {
 			return mapCommonError(err)
 		}
 
 		*g = m
+		s.SRID = srid
 		s.Geometry = m
 		s.Valid = true
 		return nil
 	case *orb.Ring:
-		m, err := Unmarshal(data)
+		m, srid, err := Unmarshal(data)
 		if err != nil {
 			return err
 		}
 
 		if p, ok := m.(orb.Polygon); ok && len(p) == 1 {
 			*g = p[0]
+			s.SRID = srid
 			s.Geometry = p[0]
 			s.Valid = true
 			return nil
@@ -189,64 +166,47 @@ func (s *GeometryScanner) Scan(d interface{}) error {
 
 		return ErrIncorrectGeometry
 	case *orb.Polygon:
-		p, _, err := wkbcommon.ScanPolygon(data)
-		if err == wkbcommon.ErrNotWKBHeader {
-			p, _, e = wkbcommon.ScanPolygon(data[4:])
-			if e != wkbcommon.ErrNotWKBHeader {
-				err = e
-			}
-		}
-
+		p, srid, err := wkbcommon.ScanPolygon(data)
 		if err != nil {
 			return mapCommonError(err)
 		}
 
 		*g = p
+		s.SRID = srid
 		s.Geometry = p
 		s.Valid = true
 		return nil
 	case *orb.MultiPolygon:
-		m, _, err := wkbcommon.ScanMultiPolygon(data)
-		if err == wkbcommon.ErrNotWKBHeader {
-			m, _, e = wkbcommon.ScanMultiPolygon(data[4:])
-			if e != wkbcommon.ErrNotWKBHeader {
-				err = e
-			}
-		}
-
+		m, srid, err := wkbcommon.ScanMultiPolygon(data)
 		if err != nil {
 			return mapCommonError(err)
 		}
 
 		*g = m
+		s.SRID = srid
 		s.Geometry = m
 		s.Valid = true
 		return nil
 	case *orb.Collection:
-		c, _, err := wkbcommon.ScanCollection(data)
-		if err == wkbcommon.ErrNotWKBHeader {
-			c, _, e = wkbcommon.ScanCollection(data[4:])
-			if e != wkbcommon.ErrNotWKBHeader {
-				err = e
-			}
-		}
-
+		c, srid, err := wkbcommon.ScanCollection(data)
 		if err != nil {
 			return mapCommonError(err)
 		}
 
 		*g = c
+		s.SRID = srid
 		s.Geometry = c
 		s.Valid = true
 		return nil
 	case *orb.Bound:
-		m, err := Unmarshal(data)
+		m, srid, err := Unmarshal(data)
 		if err != nil {
 			return err
 		}
 
 		b := m.Bound()
 		*g = b
+		s.SRID = srid
 		s.Geometry = b
 		s.Valid = true
 		return nil
@@ -256,18 +216,19 @@ func (s *GeometryScanner) Scan(d interface{}) error {
 }
 
 type value struct {
-	v orb.Geometry
+	srid int
+	v    orb.Geometry
 }
 
 // Value will create a driver.Valuer that will WKB the geometry
 // into the database query.
-func Value(g orb.Geometry) driver.Valuer {
-	return value{v: g}
+func Value(g orb.Geometry, srid int) driver.Valuer {
+	return value{srid: srid, v: g}
 
 }
 
 func (v value) Value() (driver.Value, error) {
-	val, err := Marshal(v.v)
+	val, err := Marshal(v.v, v.srid)
 	if val == nil {
 		return nil, err
 	}
