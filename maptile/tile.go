@@ -3,12 +3,12 @@
 package maptile
 
 import (
+	"github.com/paulmach/orb/mercator"
 	"math"
 	"math/bits"
 
 	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/geojson"
-	"github.com/paulmach/orb/internal/mercator"
 )
 
 // Tiles is a set of tiles, later we can add methods to this.

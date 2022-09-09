@@ -1,11 +1,11 @@
 package project
 
 import (
+	"github.com/paulmach/orb/mercator"
 	"math"
 	"testing"
 
 	"github.com/paulmach/orb"
-	"github.com/paulmach/orb/internal/mercator"
 )
 
 func TestMercator(t *testing.T) {

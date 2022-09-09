@@ -1,11 +1,11 @@
 package mvt
 
 import (
+	"github.com/paulmach/orb/mercator"
 	"math"
 	"math/bits"
 
 	"github.com/paulmach/orb"
-	"github.com/paulmach/orb/internal/mercator"
 	"github.com/paulmach/orb/maptile"
 )
 

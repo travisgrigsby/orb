@@ -2,11 +2,11 @@ package maptile
 
 import (
 	"fmt"
+	"github.com/paulmach/orb/mercator"
 	"math"
 	"testing"
 
 	"github.com/paulmach/orb"
-	"github.com/paulmach/orb/internal/mercator"
 )
 
 func TestQuadKey(t *testing.T) {
